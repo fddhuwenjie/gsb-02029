@@ -1,0 +1,91 @@
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: bookstore-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: "1234"
+      MYSQL_DATABASE: bookstore
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./backend/src/main/resources/db:/docker-entrypoint-initdb.d
+    command: >
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --mysql-native-password=ON
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - bookstore-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: bookstore-backend
+    restart: always
+    ports:
+      - "8090:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/bookstore?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai&characterEncoding=utf8
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: "1234"
+      # 支付配置 - 默认模拟模式
+      PAYMENT_MODE: ${PAYMENT_MODE:-mock}
+      # 微信支付配置 (生产环境设置)
+      WECHAT_PAY_APPID: ${WECHAT_PAY_APPID:-}
+      WECHAT_PAY_MCHID: ${WECHAT_PAY_MCHID:-}
+      WECHAT_PAY_SECRET: ${WECHAT_PAY_SECRET:-}
+      WECHAT_PAY_NOTIFY_URL: ${WECHAT_PAY_NOTIFY_URL:-}
+      # 支付宝配置 (生产环境设置)
+      ALIPAY_APPID: ${ALIPAY_APPID:-}
+      ALIPAY_PRIVATE_KEY: ${ALIPAY_PRIVATE_KEY:-}
+      ALIPAY_PUBLIC_KEY: ${ALIPAY_PUBLIC_KEY:-}
+      ALIPAY_NOTIFY_URL: ${ALIPAY_NOTIFY_URL:-}
+    volumes:
+      - uploads_data:/app/uploads
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - bookstore-network
+
+  frontend-admin:
+    build:
+      context: ./frontend-admin
+      dockerfile: Dockerfile
+    container_name: bookstore-admin
+    restart: always
+    ports:
+      - "8091:80"
+    depends_on:
+      - backend
+    networks:
+      - bookstore-network
+
+  frontend-user:
+    build:
+      context: ./frontend-user
+      dockerfile: Dockerfile
+    container_name: bookstore-user
+    restart: always
+    ports:
+      - "8092:80"
+    depends_on:
+      - backend
+    networks:
+      - bookstore-network
+
+volumes:
+  mysql_data:
+  uploads_data:
+
+networks:
+  bookstore-network:
+    driver: bridge

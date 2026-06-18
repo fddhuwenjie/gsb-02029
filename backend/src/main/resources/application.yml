@@ -1,0 +1,46 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3307/bookstore?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai&characterEncoding=utf8
+    username: root
+    password: "1234"
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
+  
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+jwt:
+  secret: bookstore-secret-key-for-jwt-token-generation-2024
+  expiration: 86400000
+
+# 支付配置
+payment:
+  mode: ${PAYMENT_MODE:mock}  # mock=模拟支付, production=生产环境
+  wechat:
+    appid: ${WECHAT_PAY_APPID:}
+    mchid: ${WECHAT_PAY_MCHID:}
+    secret: ${WECHAT_PAY_SECRET:}
+    notify-url: ${WECHAT_PAY_NOTIFY_URL:}
+  alipay:
+    appid: ${ALIPAY_APPID:}
+    private-key: ${ALIPAY_PRIVATE_KEY:}
+    public-key: ${ALIPAY_PUBLIC_KEY:}
+    notify-url: ${ALIPAY_NOTIFY_URL:}
+
+logging:
+  level:
+    root: INFO
+    com.bookstore: DEBUG

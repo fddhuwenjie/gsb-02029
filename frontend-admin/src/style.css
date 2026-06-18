@@ -1,0 +1,140 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #f5f7fa;
+  color: #1a1a2e;
+  line-height: 1.6;
+}
+
+:root {
+  --primary: #6366f1;
+  --primary-light: #818cf8;
+  --primary-dark: #4f46e5;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-400: #9ca3af;
+  --gray-500: #6b7280;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
+  --gray-800: #1f2937;
+  --gray-900: #111827;
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+
+.el-button--primary {
+  background: var(--primary) !important;
+  border-color: var(--primary) !important;
+}
+
+.el-button--primary:hover {
+  background: var(--primary-light) !important;
+  border-color: var(--primary-light) !important;
+}
+
+.el-menu {
+  border-right: none !important;
+}
+
+.el-dropdown__caret-button:focus-visible,
+.el-dropdown .el-tooltip__trigger:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.el-card {
+  border-radius: var(--radius) !important;
+  border: none !important;
+  box-shadow: var(--shadow) !important;
+}
+
+.el-table {
+  border-radius: var(--radius-sm) !important;
+}
+
+.el-input__wrapper {
+  border-radius: var(--radius-sm) !important;
+}
+
+.el-input.is-focus .el-input__clear,
+.el-input:hover .el-input__clear {
+  opacity: 1;
+}
+
+.el-input .el-input__clear {
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.el-input .el-input__suffix {
+  position: absolute;
+  right: 8px;
+}
+
+.page-header {
+  margin-bottom: 24px;
+}
+
+.page-header h2 {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--gray-800);
+}
+
+.stat-card {
+  background: white;
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: var(--shadow);
+  transition: transform 0.2s, box-shadow 0.2s;
+  overflow: hidden;
+  min-height: 140px;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.stat-card .icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.stat-card .icon.blue { background: #dbeafe; color: #3b82f6; }
+.stat-card .icon.green { background: #d1fae5; color: #10b981; }
+.stat-card .icon.purple { background: #ede9fe; color: #8b5cf6; }
+.stat-card .icon.orange { background: #ffedd5; color: #f97316; }
+
+.stat-card .value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--gray-800);
+  margin-bottom: 4px;
+  word-break: break-all;
+  line-height: 1.2;
+}
+
+.stat-card .label {
+  font-size: 14px;
+  color: var(--gray-500);
+}
