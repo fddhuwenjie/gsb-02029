@@ -26,6 +26,9 @@ jwt:
   secret: bookstore-secret-key-for-jwt-token-generation-2024
   expiration: 86400000
 
+order:
+  expire-minutes: 30
+
 # 支付配置
 payment:
   mode: ${PAYMENT_MODE:mock}  # mock=模拟支付, production=生产环境
