@@ -27,6 +27,16 @@ public class OrderController {
         Page<Order> orders = orderService.getOrders(userId, page, size);
         return ApiResponse.success(orders);
     }
+
+    @GetMapping("/seller")
+    public ApiResponse<?> getSellerOrders(
+            @AuthenticationPrincipal Long sellerId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String status) {
+        Page<Order> orders = orderService.getSellerOrders(sellerId, page, size, status);
+        return ApiResponse.success(orders);
+    }
     
     @GetMapping("/{id}")
     public ApiResponse<?> getOrder(@PathVariable Long id) {
@@ -51,7 +61,25 @@ public class OrderController {
     
     @PutMapping("/{id}/cancel")
     public ApiResponse<?> cancelOrder(@PathVariable Long id) {
-        Order order = orderService.cancelOrder(id);
-        return ApiResponse.success(order);
+        try {
+            Order order = orderService.cancelOrder(id);
+            return ApiResponse.success(order);
+        } catch (IllegalArgumentException e) {
+            return ApiResponse.error(404, e.getMessage());
+        } catch (IllegalStateException e) {
+            return ApiResponse.error(400, e.getMessage());
+        }
+    }
+
+    @PutMapping("/{id}/confirm")
+    public ApiResponse<?> confirmReceive(@PathVariable Long id) {
+        try {
+            Order order = orderService.completeOrder(id);
+            return ApiResponse.success(order);
+        } catch (IllegalArgumentException e) {
+            return ApiResponse.error(404, e.getMessage());
+        } catch (IllegalStateException e) {
+            return ApiResponse.error(400, e.getMessage());
+        }
     }
 }
