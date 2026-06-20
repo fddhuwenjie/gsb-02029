@@ -36,6 +36,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/categories/**").permitAll()
                 .requestMatchers("/api/upload/images/**").permitAll()
                 .requestMatchers("/api/payment/config").permitAll()
+                .requestMatchers("/api/payment/callback/**").permitAll()
                 .requestMatchers("/api/stats/**").permitAll()
                 .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/books/**").permitAll()
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
