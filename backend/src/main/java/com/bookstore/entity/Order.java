@@ -36,6 +36,32 @@ public class Order {
 
     @Column(name = "tracking_no")
     private String trackingNo;
+
+    @Column(name = "pay_method")
+    private String payMethod;
+
+    @Column(name = "payment_no", unique = true)
+    private String paymentNo;
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @Column(name = "pay_time")
+    private LocalDateTime payTime;
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @Column(name = "expire_time")
+    private LocalDateTime expireTime;
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @Column(name = "ship_time")
+    private LocalDateTime shipTime;
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @Column(name = "complete_time")
+    private LocalDateTime completeTime;
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @Column(name = "cancel_time")
+    private LocalDateTime cancelTime;
     
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Column(name = "created_at")
