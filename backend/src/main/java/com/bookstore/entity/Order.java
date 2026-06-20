@@ -36,7 +36,31 @@ public class Order {
 
     @Column(name = "tracking_no")
     private String trackingNo;
-    
+
+    /**
+     * 支付流水号（来自支付网关或 mock 生成），全局唯一，用于幂等。
+     * NULL 表示尚未支付。
+     */
+    @Column(name = "payment_no", unique = true)
+    private String paymentNo;
+
+    /**
+     * 支付渠道：WECHAT / ALIPAY / MOCK 等。
+     */
+    @Column(name = "payment_method")
+    private String paymentMethod;
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @Column(name = "paid_at")
+    private LocalDateTime paidAt;
+
+    /**
+     * 乐观锁版本号，避免管理端并发修改订单时丢失更新。
+     */
+    @Version
+    @Column(name = "version", nullable = false)
+    private Long version = 0L;
+
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
