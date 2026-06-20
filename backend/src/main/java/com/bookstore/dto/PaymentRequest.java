@@ -5,5 +5,7 @@ import lombok.Data;
 @Data
 public class PaymentRequest {
     private Long orderId;
-    private String paymentMethod; // WECHAT, ALIPAY
+    private String paymentMethod;
+    private String paymentNo;
+    private String thirdPartyNo;
 }

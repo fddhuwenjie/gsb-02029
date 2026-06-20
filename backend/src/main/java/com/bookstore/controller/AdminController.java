@@ -8,6 +8,7 @@ import com.bookstore.entity.Category;
 import com.bookstore.entity.Order;
 import com.bookstore.entity.User;
 import com.bookstore.repository.*;
+import com.bookstore.service.OrderService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -20,7 +21,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/admin")
 public class AdminController {
-    
+
     private final UserRepository userRepository;
     private final BookRepository bookRepository;
     private final CategoryRepository categoryRepository;
@@ -28,11 +29,12 @@ public class AdminController {
     private final OrderItemRepository orderItemRepository;
     private final CartItemRepository cartItemRepository;
     private final FavoriteRepository favoriteRepository;
-    
+    private final OrderService orderService;
+
     public AdminController(UserRepository userRepository, BookRepository bookRepository,
                           CategoryRepository categoryRepository, OrderRepository orderRepository,
                           OrderItemRepository orderItemRepository, CartItemRepository cartItemRepository,
-                          FavoriteRepository favoriteRepository) {
+                          FavoriteRepository favoriteRepository, OrderService orderService) {
         this.userRepository = userRepository;
         this.bookRepository = bookRepository;
         this.categoryRepository = categoryRepository;
@@ -40,8 +42,9 @@ public class AdminController {
         this.orderItemRepository = orderItemRepository;
         this.cartItemRepository = cartItemRepository;
         this.favoriteRepository = favoriteRepository;
+        this.orderService = orderService;
     }
-    
+
     @GetMapping("/dashboard")
     public ApiResponse<?> getDashboard() {
         Map<String, Object> data = new HashMap<>();
@@ -52,7 +55,7 @@ public class AdminController {
         data.put("totalSales", totalSales != null ? totalSales : BigDecimal.ZERO);
         return ApiResponse.success(data);
     }
-    
+
     @GetMapping("/users")
     public ApiResponse<?> getUsers(
             @RequestParam(defaultValue = "0") int page,
@@ -61,7 +64,7 @@ public class AdminController {
         Page<User> users = userRepository.findAll(pageRequest);
         return ApiResponse.success(users);
     }
-    
+
     @PutMapping("/users/{id}/status")
     public ApiResponse<?> updateUserStatus(@PathVariable Long id, @RequestBody Map<String, Integer> body) {
         User user = userRepository.findById(id).orElse(null);
@@ -73,7 +76,7 @@ public class AdminController {
         userRepository.save(user);
         return ApiResponse.success(user);
     }
-    
+
     @GetMapping("/books")
     public ApiResponse<?> getBooks(
             @RequestParam(defaultValue = "0") int page,
@@ -86,7 +89,7 @@ public class AdminController {
         Page<Book> books = bookRepository.searchBooks(title, author, categoryId, status, pageRequest);
         return ApiResponse.success(books);
     }
-    
+
     @PostMapping("/books")
     public ApiResponse<?> createBook(@RequestBody Book book) {
         book.setCreatedAt(LocalDateTime.now());
@@ -97,7 +100,7 @@ public class AdminController {
         bookRepository.save(book);
         return ApiResponse.success(book);
     }
-    
+
     @PutMapping("/books/{id}")
     public ApiResponse<?> updateBook(@PathVariable Long id, @RequestBody Book book) {
         Book existing = bookRepository.findById(id).orElse(null);
@@ -120,7 +123,7 @@ public class AdminController {
         bookRepository.save(existing);
         return ApiResponse.success(existing);
     }
-    
+
     @DeleteMapping("/books/{id}")
     public ApiResponse<?> deleteBook(@PathVariable Long id) {
         Book book = bookRepository.findById(id).orElse(null);
@@ -135,18 +138,18 @@ public class AdminController {
         bookRepository.delete(book);
         return ApiResponse.success();
     }
-    
+
     @GetMapping("/categories")
     public ApiResponse<?> getCategories() {
         return ApiResponse.success(categoryRepository.findAll(Sort.by(Sort.Direction.ASC, "sortOrder")));
     }
-    
+
     @PostMapping("/categories")
     public ApiResponse<?> createCategory(@RequestBody Category category) {
         categoryRepository.save(category);
         return ApiResponse.success(category);
     }
-    
+
     @PutMapping("/categories/{id}")
     public ApiResponse<?> updateCategory(@PathVariable Long id, @RequestBody Category category) {
         Category existing = categoryRepository.findById(id).orElse(null);
@@ -160,7 +163,7 @@ public class AdminController {
         categoryRepository.save(existing);
         return ApiResponse.success(existing);
     }
-    
+
     @DeleteMapping("/categories/{id}")
     public ApiResponse<?> deleteCategory(@PathVariable Long id) {
         Category category = categoryRepository.findById(id).orElse(null);
@@ -173,7 +176,7 @@ public class AdminController {
         categoryRepository.delete(category);
         return ApiResponse.success();
     }
-    
+
     @GetMapping("/orders")
     public ApiResponse<?> getOrders(
             @RequestParam(defaultValue = "0") int page,
@@ -188,21 +191,31 @@ public class AdminController {
         }
         return ApiResponse.success(orders);
     }
-    
+
     @PutMapping("/orders/{id}/status")
     public ApiResponse<?> updateOrderStatus(@PathVariable Long id, @RequestBody Map<String, String> body) {
-        Order order = orderRepository.findById(id).orElse(null);
-        if (order == null) {
-            return ApiResponse.error(404, "订单不存在");
-        }
-        String newStatus = body.get("status");
-        if (OrderStatus.SHIPPED.equals(newStatus)) {
+        try {
+            String newStatus = body.get("status");
             String trackingNo = body.get("trackingNo");
-            order.setTrackingNo(trackingNo);
+            Order order = orderService.adminUpdateOrderStatus(id, newStatus, trackingNo);
+            return ApiResponse.success(order);
+        } catch (IllegalArgumentException e) {
+            return ApiResponse.error(400, e.getMessage());
+        } catch (IllegalStateException e) {
+            return ApiResponse.error(409, e.getMessage());
         }
-        order.setStatus(newStatus);
-        order.setUpdatedAt(LocalDateTime.now());
-        orderRepository.save(order);
-        return ApiResponse.success(order);
+    }
+
+    @PutMapping("/orders/{id}/ship")
+    public ApiResponse<?> shipOrder(@PathVariable Long id, @RequestBody Map<String, String> body) {
+        try {
+            String trackingNo = body.get("trackingNo");
+            Order order = orderService.shipOrder(id, trackingNo);
+            return ApiResponse.success(order);
+        } catch (IllegalArgumentException e) {
+            return ApiResponse.error(400, e.getMessage());
+        } catch (IllegalStateException e) {
+            return ApiResponse.error(409, e.getMessage());
+        }
     }
 }

@@ -12,13 +12,13 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/orders")
 public class OrderController {
-    
+
     private final OrderService orderService;
-    
+
     public OrderController(OrderService orderService) {
         this.orderService = orderService;
     }
-    
+
     @GetMapping
     public ApiResponse<?> getOrders(
             @AuthenticationPrincipal Long userId,
@@ -27,16 +27,20 @@ public class OrderController {
         Page<Order> orders = orderService.getOrders(userId, page, size);
         return ApiResponse.success(orders);
     }
-    
+
     @GetMapping("/{id}")
-    public ApiResponse<?> getOrder(@PathVariable Long id) {
+    public ApiResponse<?> getOrder(@PathVariable Long id,
+                                    @AuthenticationPrincipal Long userId) {
         Order order = orderService.getOrderById(id);
         if (order == null) {
             return ApiResponse.error(404, "订单不存在");
         }
+        if (!order.getUserId().equals(userId)) {
+            return ApiResponse.error(403, "无权查看此订单");
+        }
         return ApiResponse.success(order);
     }
-    
+
     @PostMapping
     public ApiResponse<?> createOrder(
             @Valid @RequestBody OrderRequest request,
@@ -48,10 +52,30 @@ public class OrderController {
             return ApiResponse.error(400, e.getMessage());
         }
     }
-    
+
     @PutMapping("/{id}/cancel")
-    public ApiResponse<?> cancelOrder(@PathVariable Long id) {
-        Order order = orderService.cancelOrder(id);
-        return ApiResponse.success(order);
+    public ApiResponse<?> cancelOrder(@PathVariable Long id,
+                                       @AuthenticationPrincipal Long userId) {
+        try {
+            Order order = orderService.cancelOrder(id, userId);
+            return ApiResponse.success(order);
+        } catch (IllegalArgumentException e) {
+            return ApiResponse.error(400, e.getMessage());
+        } catch (IllegalStateException e) {
+            return ApiResponse.error(409, e.getMessage());
+        }
+    }
+
+    @PutMapping("/{id}/confirm")
+    public ApiResponse<?> confirmReceive(@PathVariable Long id,
+                                          @AuthenticationPrincipal Long userId) {
+        try {
+            Order order = orderService.completeOrder(id, userId);
+            return ApiResponse.success(order);
+        } catch (IllegalArgumentException e) {
+            return ApiResponse.error(400, e.getMessage());
+        } catch (IllegalStateException e) {
+            return ApiResponse.error(409, e.getMessage());
+        }
     }
 }
