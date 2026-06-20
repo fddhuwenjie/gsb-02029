@@ -33,6 +33,10 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     boolean existsByCategoryId(Long categoryId);
 
     @Modifying
-    @Query("UPDATE Book b SET b.stock = b.stock - :quantity WHERE b.id = :bookId AND b.stock >= :quantity")
+    @Query("UPDATE Book b SET b.stock = b.stock - :quantity, b.updatedAt = CURRENT_TIMESTAMP WHERE b.id = :bookId AND b.stock >= :quantity AND b.status = 1")
     int decrementStock(@Param("bookId") Long bookId, @Param("quantity") int quantity);
+
+    @Modifying
+    @Query("UPDATE Book b SET b.stock = b.stock + :quantity, b.updatedAt = CURRENT_TIMESTAMP WHERE b.id = :bookId")
+    int incrementStock(@Param("bookId") Long bookId, @Param("quantity") int quantity);
 }

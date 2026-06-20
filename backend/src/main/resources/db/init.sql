@@ -76,9 +76,17 @@ CREATE TABLE IF NOT EXISTS orders (
     receiver VARCHAR(50),
     remark TEXT,
     tracking_no VARCHAR(100),
+    payment_method VARCHAR(20),
+    payment_no VARCHAR(100) UNIQUE,
+    pay_time TIMESTAMP NULL,
+    expire_time TIMESTAMP NULL,
+    version BIGINT DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id)
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    INDEX idx_status (status),
+    INDEX idx_user_id (user_id),
+    INDEX idx_expire_time (expire_time)
 );
 
 -- 订单项表
@@ -90,6 +98,22 @@ CREATE TABLE IF NOT EXISTS order_items (
     price DECIMAL(10,2) NOT NULL,
     FOREIGN KEY (order_id) REFERENCES orders(id),
     FOREIGN KEY (book_id) REFERENCES books(id)
+);
+
+-- 支付流水表
+CREATE TABLE IF NOT EXISTS payment_logs (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    order_id BIGINT NOT NULL,
+    order_no VARCHAR(50) NOT NULL,
+    payment_no VARCHAR(100) UNIQUE NOT NULL,
+    third_party_no VARCHAR(100),
+    method VARCHAR(20) NOT NULL,
+    amount DECIMAL(10,2) NOT NULL,
+    status VARCHAR(20) NOT NULL,
+    raw_response TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_order_id (order_id),
+    INDEX idx_payment_no (payment_no)
 );
 
 -- 收藏表
@@ -136,10 +160,10 @@ INSERT INTO books (title, author, isbn, publisher, description, cover_image, ori
 ('小王子', '安托万·德·圣-埃克苏佩里', '9787020042494', '人民文学出版社', '以一位飞行员作为故事叙述者，讲述了小王子从自己星球出发前往地球的过程中，所经历的各种历险。这是一本关于爱与责任的经典童话。', '/covers/santi.jpg', 32.00, 15.00, '全新', 7, 8, 3, 1, 320);
 
 -- 插入示例订单
-INSERT INTO orders (order_no, user_id, total_amount, status, address, phone, receiver, remark) VALUES
-('ORD20240101001', 2, 60.00, 'COMPLETED', '北京市海淀区中关村大街1号', '13800138001', '张三', '请尽快发货'),
-('ORD20240102002', 2, 45.00, 'SHIPPED', '上海市浦东新区陆家嘴环路1000号', '13800138002', '李四', NULL),
-('ORD20240103003', 3, 60.00, 'PAID', '广州市天河区天河路385号', '13800138003', '王五', '周末送货');
+INSERT INTO orders (order_no, user_id, total_amount, status, address, phone, receiver, remark, payment_method, payment_no, pay_time) VALUES
+('ORD20240101001', 2, 60.00, 'COMPLETED', '北京市海淀区中关村大街1号', '13800138001', '张三', '请尽快发货', 'MOCK', 'PAY20240101001', '2024-01-01 10:00:00'),
+('ORD20240102002', 2, 45.00, 'SHIPPED', '上海市浦东新区陆家嘴环路1000号', '13800138002', '李四', NULL, 'MOCK', 'PAY20240102002', '2024-01-02 14:30:00'),
+('ORD20240103003', 3, 60.00, 'PAID', '广州市天河区天河路385号', '13800138003', '王五', '周末送货', 'MOCK', 'PAY20240103003', '2024-01-03 09:15:00');
 
 -- 插入订单项
 INSERT INTO order_items (order_id, book_id, quantity, price) VALUES

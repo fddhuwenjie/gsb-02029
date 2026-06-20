@@ -11,7 +11,7 @@ import java.util.List;
 @Data
 @Entity
 @Table(name = "orders")
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "user"})
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "user", "version"})
 public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,6 +36,23 @@ public class Order {
 
     @Column(name = "tracking_no")
     private String trackingNo;
+
+    @Column(name = "payment_method")
+    private String paymentMethod;
+
+    @Column(name = "payment_no", unique = true)
+    private String paymentNo;
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @Column(name = "pay_time")
+    private LocalDateTime payTime;
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @Column(name = "expire_time")
+    private LocalDateTime expireTime;
+
+    @Version
+    private Long version;
     
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Column(name = "created_at")
