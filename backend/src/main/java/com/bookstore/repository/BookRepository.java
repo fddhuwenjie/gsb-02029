@@ -32,7 +32,18 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 
     boolean existsByCategoryId(Long categoryId);
 
+    /**
+     * 原子扣减库存：仅在 stock >= quantity 时才会成功，返回受影响行数。
+     * 通过 SQL 层 WHERE 条件保证并发安全，避免读-改-写竞态。
+     */
     @Modifying
     @Query("UPDATE Book b SET b.stock = b.stock - :quantity WHERE b.id = :bookId AND b.stock >= :quantity")
     int decrementStock(@Param("bookId") Long bookId, @Param("quantity") int quantity);
+
+    /**
+     * 释放库存：取消/超时关闭订单时归还预占的库存，无条件累加。
+     */
+    @Modifying
+    @Query("UPDATE Book b SET b.stock = b.stock + :quantity WHERE b.id = :bookId")
+    int incrementStock(@Param("bookId") Long bookId, @Param("quantity") int quantity);
 }

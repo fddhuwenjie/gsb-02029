@@ -8,6 +8,7 @@ import com.bookstore.entity.Category;
 import com.bookstore.entity.Order;
 import com.bookstore.entity.User;
 import com.bookstore.repository.*;
+import com.bookstore.service.OrderService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -28,11 +29,12 @@ public class AdminController {
     private final OrderItemRepository orderItemRepository;
     private final CartItemRepository cartItemRepository;
     private final FavoriteRepository favoriteRepository;
+    private final OrderService orderService;
     
     public AdminController(UserRepository userRepository, BookRepository bookRepository,
                           CategoryRepository categoryRepository, OrderRepository orderRepository,
                           OrderItemRepository orderItemRepository, CartItemRepository cartItemRepository,
-                          FavoriteRepository favoriteRepository) {
+                          FavoriteRepository favoriteRepository, OrderService orderService) {
         this.userRepository = userRepository;
         this.bookRepository = bookRepository;
         this.categoryRepository = categoryRepository;
@@ -40,6 +42,7 @@ public class AdminController {
         this.orderItemRepository = orderItemRepository;
         this.cartItemRepository = cartItemRepository;
         this.favoriteRepository = favoriteRepository;
+        this.orderService = orderService;
     }
     
     @GetMapping("/dashboard")
@@ -191,18 +194,14 @@ public class AdminController {
     
     @PutMapping("/orders/{id}/status")
     public ApiResponse<?> updateOrderStatus(@PathVariable Long id, @RequestBody Map<String, String> body) {
-        Order order = orderRepository.findById(id).orElse(null);
-        if (order == null) {
-            return ApiResponse.error(404, "订单不存在");
-        }
         String newStatus = body.get("status");
-        if (OrderStatus.SHIPPED.equals(newStatus)) {
-            String trackingNo = body.get("trackingNo");
-            order.setTrackingNo(trackingNo);
+        if (newStatus == null) {
+            return ApiResponse.error(400, "目标状态不能为空");
         }
-        order.setStatus(newStatus);
-        order.setUpdatedAt(LocalDateTime.now());
-        orderRepository.save(order);
-        return ApiResponse.success(order);
+        String trackingNo = OrderStatus.SHIPPED.equals(newStatus) ? body.get("trackingNo") : null;
+        // 走统一状态机：合法迁移由 OrderService.transition 强校验，
+        // CANCELLED 走 cancelOrder 触发库存归还，避免重复释放或越权回退。
+        Order updated = orderService.transition(id, newStatus, trackingNo);
+        return ApiResponse.success(updated);
     }
 }

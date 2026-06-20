@@ -40,6 +40,11 @@ payment:
     public-key: ${ALIPAY_PUBLIC_KEY:}
     notify-url: ${ALIPAY_NOTIFY_URL:}
 
+# 订单超时配置：PENDING 订单超过 pending-timeout-minutes 分钟自动关闭并归还库存
+order:
+  pending-timeout-minutes: ${ORDER_PENDING_TIMEOUT_MINUTES:30}
+  pending-timeout-scan-interval-ms: ${ORDER_PENDING_SCAN_INTERVAL_MS:60000}
+
 logging:
   level:
     root: INFO

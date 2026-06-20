@@ -76,6 +76,10 @@ CREATE TABLE IF NOT EXISTS orders (
     receiver VARCHAR(50),
     remark TEXT,
     tracking_no VARCHAR(100),
+    payment_no VARCHAR(64) UNIQUE,
+    payment_method VARCHAR(20),
+    paid_at TIMESTAMP NULL,
+    version BIGINT NOT NULL DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id)
